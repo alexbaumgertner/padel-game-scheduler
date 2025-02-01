@@ -11,6 +11,11 @@ export async function POST(request: Request) {
     const chatId = body.message.chat.id
     const text = body.message.text
 
+    console.log({
+      chatId,
+      text,
+    })
+
     await bot.sendMessage(chatId, `You said (test for Niko): ${text}`)
   }
 
