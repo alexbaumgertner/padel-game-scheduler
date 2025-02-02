@@ -17,12 +17,55 @@ export async function POST(request: Request) {
         text,
       })
 
-      await bot.sendMessage(chatId, `You said (test for Niko): ${text}`)
+      // Define keyboard options
+      const options = {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '👍 Yes', callback_data: 'yes' },
+              { text: '👎 No', callback_data: 'no' },
+            ],
+            [{ text: '📅 Schedule', callback_data: 'schedule' }],
+          ],
+        },
+      }
+
+      // Send message with buttons
+      await bot.sendMessage(chatId, 'Would you like to play padel?', options)
+    }
+
+    // Handle button clicks (callback queries)
+    if (body.callback_query) {
+      const callbackQuery = body.callback_query
+      const chatId = callbackQuery.message.chat.id
+      const data = callbackQuery.data
+
+      let responseText = ''
+      switch (data) {
+        case 'yes':
+          responseText = "Great! Let's schedule a game!"
+          break
+        case 'no':
+          responseText = 'Maybe next time!'
+          break
+        case 'schedule':
+          responseText = 'Opening schedule options...'
+          break
+      }
+
+      // Answer the callback query (to remove loading state from button)
+      await bot.answerCallbackQuery(callbackQuery.id)
+
+      // Send response message
+      await bot.sendMessage(chatId, responseText)
     }
 
     return NextResponse.json({ status: 'ok' })
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ status: 'error' }, { status: 500 })
+    console.error('Error processing telegram webhook:', error)
+    return NextResponse.json(
+      { status: 'error', message: (error as Error).message },
+      { status: 500 }
+    )
   }
 }
